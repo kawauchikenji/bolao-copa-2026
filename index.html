@@ -160,8 +160,9 @@ select:disabled{opacity:.6;cursor:not-allowed}
 .cl-edit{background:none;border:1px solid var(--borda);border-radius:6px;color:var(--texto2);font-size:.72rem;padding:3px 8px;cursor:pointer;font-family:var(--fd);font-weight:700;text-transform:uppercase;white-space:nowrap}
 .cl-edit:hover{border-color:var(--verde);color:var(--texto)}
 /* Modal de edição */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
-.modal{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:1.5rem;width:100%;max-width:380px}
+.modal-overlay{display:none;background:rgba(0,0,0,.55);border-radius:var(--radius);padding:2rem 1rem;margin-bottom:1rem;min-height:200px;align-items:center;justify-content:center}
+.modal-overlay.visible{display:flex}
+.modal{background:var(--fundo3);border:1px solid rgba(0,255,157,.25);border-radius:16px;padding:1.5rem;width:100%;max-width:380px}
 .modal-title{font-family:var(--fd);font-weight:800;font-size:1.1rem;text-transform:uppercase;color:var(--verde-neon);margin-bottom:1rem}
 .modal-actions{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end}
 #toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--verde-escuro);border:1px solid var(--verde-neon);color:var(--verde-neon);font-family:var(--fd);font-weight:700;font-size:.88rem;letter-spacing:.04em;text-transform:uppercase;padding:10px 18px;border-radius:10px;z-index:9999;transform:translateY(120px);transition:transform .3s ease}
@@ -277,6 +278,19 @@ select:disabled{opacity:.6;cursor:not-allowed}
     <div class="card">
       <div class="card-title">🥉 8 Melhores 3ºs Colocados <span style="font-size:.7rem;color:var(--texto2);font-weight:400;text-transform:none">(defina manualmente)</span></div>
       <div class="cl-grid" id="cl-terceiros"></div>
+      <!-- Modal inline de edição -->
+      <div class="modal-overlay" id="modal-cl">
+        <div class="modal">
+          <div class="modal-title" id="modal-cl-title">Editar Classificado</div>
+          <div class="fg" style="margin-bottom:.75rem"><label>Time</label>
+            <select id="modal-cl-select"></select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-s" onclick="fecharModal()">Cancelar</button>
+            <button class="btn btn-p" onclick="confirmarClassificado()">Confirmar</button>
+          </div>
+        </div>
+      </div>
       <button class="btn btn-a btn-full" onclick="salvarTerceiros()">💾 Salvar 3ºs Colocados</button>
     </div>
   </div>
@@ -323,19 +337,7 @@ select:disabled{opacity:.6;cursor:not-allowed}
 </section>
 </main>
 </div>
-<!-- Modal edição classificado -->
-<div class="modal-overlay" id="modal-cl" style="display:none">
-  <div class="modal">
-    <div class="modal-title" id="modal-cl-title">Editar Classificado</div>
-    <div class="fg" style="margin-bottom:.75rem"><label>Time</label>
-      <select id="modal-cl-select"></select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-s" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-p" onclick="confirmarClassificado()">Confirmar</button>
-    </div>
-  </div>
-</div>
+
 <div id="toast"></div>
 <script>
 const SB_URL='https://eydzomhqmktbmfjikbkx.supabase.co';
@@ -883,10 +885,10 @@ function abrirModalCL(id,titulo){
   const sel=document.getElementById('modal-cl-select');
   const atual=classificados[id]?.time_nome||'';
   sel.innerHTML='<option value="">— Selecione —</option>'+TODOS_TIMES.map(t=>`<option value="${t}" ${atual===t?'selected':''}>${t}</option>`).join('');
-  document.getElementById('modal-cl').style.display='flex';
+  document.getElementById('modal-cl').classList.add('visible');
 }
 
-function fecharModal(){document.getElementById('modal-cl').style.display='none';modalCLId=null}
+function fecharModal(){document.getElementById('modal-cl').classList.remove('visible');modalCLId=null}
 
 async function confirmarClassificado(){
   if(!modalCLId)return;
@@ -894,7 +896,7 @@ async function confirmarClassificado(){
   if(!time){showToast('Selecione um time',true);return}
   const{error}=await sb.from('bolao_classificados').upsert({id:modalCLId,grupo:'T',posicao:parseInt(modalCLId.replace('T','')),time_nome:time,bandeira:'🏳',atualizado_em:new Date().toISOString()},{onConflict:'id'});
   if(error){showToast('Erro!',true);return}
-  await carregarClassificados();fecharModal();renderClassificados();showToast(`${time} salvo como ${modalCLId}!`);
+  await carregarClassificados();fecharModal();await renderClassificados();showToast(`${time} salvo como ${modalCLId}!`);document.getElementById('cl-terceiros').scrollIntoView({behavior:'smooth'});
 }
 
 async function salvarTerceiros(){showToast('Use os botões Editar de cada slot T1–T8.')}
