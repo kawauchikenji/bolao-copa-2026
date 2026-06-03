@@ -266,7 +266,7 @@ select:disabled{opacity:.6;cursor:not-allowed}
     <div style="text-align:right;margin-top:1rem"><button class="btn btn-a" onclick="salvarResultados()">💾 Salvar Resultados</button></div>
   </div>
   <div id="res-classificados" style="display:none">
-    <div class="ib">🏅 Os <strong>24 primeiros e segundos</strong> de cada grupo são calculados automaticamente. Preencha os <strong>8 melhores terceiros</strong> manualmente nos slots T1–T8.</div>
+    <div class="ib">🏅 Os <strong>24 primeiros, segundos e terceiros</strong> de cada grupo são calculados automaticamente a partir dos resultados inseridos.</div>
     <div class="card">
       <div class="card-title">🥇 1ºs Colocados (calculados automaticamente)</div>
       <div class="cl-grid" id="cl-primeiros"></div>
@@ -276,26 +276,21 @@ select:disabled{opacity:.6;cursor:not-allowed}
       <div class="cl-grid" id="cl-segundos"></div>
     </div>
     <div class="card">
-      <div class="card-title">🥉 8 Melhores 3ºs Colocados <span style="font-size:.7rem;color:var(--texto2);font-weight:400;text-transform:none">(defina manualmente)</span></div>
+      <div class="card-title">🥉 3ºs Colocados dos Grupos (calculados automaticamente)</div>
       <div class="cl-grid" id="cl-terceiros"></div>
-      <!-- Modal inline de edição -->
-      <div class="modal-overlay" id="modal-cl">
-        <div class="modal">
-          <div class="modal-title" id="modal-cl-title">Editar Classificado</div>
-          <div class="fg" style="margin-bottom:.75rem"><label>Time</label>
-            <select id="modal-cl-select"></select>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-s" onclick="fecharModal()">Cancelar</button>
-            <button class="btn btn-p" onclick="confirmarClassificado()">Confirmar</button>
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-a btn-full" onclick="salvarTerceiros()">💾 Salvar 3ºs Colocados</button>
     </div>
   </div>
   <div id="res-matamata" style="display:none">
     <div class="ib">⚽ Insira o <strong>placar real</strong> e defina o <strong>vencedor</strong> de cada jogo. Os nomes propagam automaticamente para a próxima fase nas apostas de todos.</div>
+    <!-- Painel de seleção dos 8 melhores terceiros nos 16-avos -->
+    <div class="card" id="card-terceiros-16avos">
+      <div class="card-title">🥉 Definir os 3ºs Classificados nos 16-avos
+        <span style="font-size:.7rem;color:var(--texto2);font-weight:400;text-transform:none;letter-spacing:0">(J7–J16 — após a fase de grupos)</span>
+      </div>
+      <div class="wb">⚠️ Selecione qual 3º colocado enfrenta cada 1º/2º colocado. A FIFA divulga o chaveamento após encerrar a fase de grupos.</div>
+      <div id="terceiros-16avos-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem"></div>
+      <button class="btn btn-a" onclick="salvarTerceiros16avos()">💾 Salvar seleção de 3ºs</button>
+    </div>
     <div class="fase-pills" id="fase-pills-res-mm"></div>
     <div id="jogos-mm-container"><div class="loading">Carregando</div></div>
     <div style="text-align:right;margin-top:1rem"><button class="btn btn-a" onclick="salvarResultadosMM()">💾 Salvar</button></div>
@@ -514,7 +509,7 @@ function mostrarApp(){
 // DADOS
 // ============================================================
 async function carregarDados(){
-  await Promise.all([carregarConfig(),carregarParticipantes(),carregarJogos(),carregarLockouts(),carregarClassificados()]);
+  await Promise.all([carregarConfig(),carregarParticipantes(),carregarJogos(),carregarLockouts(),carregarClassificados(),carregarTerceiros16avos()]);
   popularSelectTimes('ap-campeao');popularSelectTimes('res-campeao');
 }
 
@@ -562,8 +557,29 @@ function atualizarLabels(){
 // ============================================================
 // RESOLUÇÃO DE NOMES (classificados + vencedores MM)
 // ============================================================
-async function resolverNomeTime(nomeOriginal){
-  // "1º Grupo A" → busca em classificados
+// Mapa de quais jogos têm slot de 3o e grupos elegíveis
+const TERCEIROS_16AVOS_INFO = {
+  202:{label:'J74 — 1º E vs 3º de A/B/C/D/F',grupos:['A','B','C','D','F']},
+  205:{label:'J77 — 1º I vs 3º de C/D/F/G/H',grupos:['C','D','F','G','H']},
+  207:{label:'J79 — 1º A vs 3º de C/E/F/H/I',grupos:['C','E','F','H','I']},
+  208:{label:'J80 — 1º L vs 3º de E/H/I/J/K',grupos:['E','H','I','J','K']},
+  209:{label:'J81 — 1º D vs 3º de B/E/F/I/J',grupos:['B','E','F','I','J']},
+  210:{label:'J82 — 1º G vs 3º de A/E/H/I/J',grupos:['A','E','H','I','J']},
+  213:{label:'J85 — 1º B vs 3º de E/F/G/I/J',grupos:['E','F','G','I','J']},
+  215:{label:'J87 — 1º K vs 3º de D/E/I/J/L',grupos:['D','E','I','J','L']},
+};
+
+// Mapa global de terceiros dos 16-avos: {jogo_id: {nome, bandeira}}
+let terceirosMapa16 = {};
+
+async function carregarTerceiros16avos(){
+  const{data}=await sb.from('bolao_terceiros_16avos').select('*');
+  terceirosMapa16={};
+  (data||[]).forEach(t=>{if(t.time_nome)terceirosMapa16[t.jogo_id]={nome:t.time_nome,bandeira:t.bandeira||'🏳'}});
+}
+
+async function resolverNomeTime(nomeOriginal, jogoId=null){
+  // "1º Grupo A" / "2º Grupo A" → busca em classificados
   const mGrupo=nomeOriginal.match(/^([12])º Grupo ([A-L])$/);
   if(mGrupo){
     const pos=parseInt(mGrupo[1]),gr=mGrupo[2];
@@ -572,13 +588,11 @@ async function resolverNomeTime(nomeOriginal){
     if(cl&&cl.time_nome&&!cl.time_nome.includes('º Grupo'))return{nome:cl.time_nome,bandeira:cl.bandeira||'🏳'};
     return{nome:nomeOriginal,bandeira:'🏳'};
   }
-  // "3º Classificado X" → busca T1..T8
-  const mT=nomeOriginal.match(/^3º Classificado (\d)$/);
-  if(mT){
-    const key=`T${mT[1]}`;
-    const cl=classificados[key];
-    if(cl&&cl.time_nome&&!cl.time_nome.includes('Classificado'))return{nome:cl.time_nome,bandeira:cl.bandeira||'🏳'};
-    return{nome:nomeOriginal,bandeira:'🏳'};
+  // "3º classificado" → busca em terceirosMapa16 pelo jogo_id
+  if(nomeOriginal.includes('3º classificado')&&jogoId){
+    const t=terceirosMapa16[jogoId];
+    if(t)return{nome:t.nome,bandeira:t.bandeira||'🏳'};
+    return{nome:'3º classificado (a definir)',bandeira:'🏳'};
   }
   // "Venc. J201" → busca em bolao_resultados_matamata
   const mV=nomeOriginal.match(/^Venc\. J(\d+)$/);
@@ -588,15 +602,14 @@ async function resolverNomeTime(nomeOriginal){
     if(data?.time_vencedor)return{nome:data.time_vencedor,bandeira:data.bandeira_vencedor||'🏳'};
     return{nome:nomeOriginal,bandeira:'⚽'};
   }
-  // "Perd. SF1/SF2" → busca perdedor nas semis
+  // "Perd. SF1/SF2"
   const mP=nomeOriginal.match(/^Perd\. SF(\d)$/);
   if(mP){
     const sfId=mP[1]==='1'?501:502;
     const jogo=jogos.find(j=>j.id===sfId);
     if(jogo){
-      const{data:res}=await sb.from('bolao_resultados').select('*').eq('jogo_id',sfId).single();
       const{data:mm}=await sb.from('bolao_resultados_matamata').select('*').eq('jogo_id',sfId).single();
-      if(mm?.time_vencedor&&res){
+      if(mm?.time_vencedor){
         const venc=mm.time_vencedor;
         const perdedor=venc===jogo.time_casa?jogo.time_fora:jogo.time_casa;
         const bandPerd=venc===jogo.time_casa?jogo.bandeira_fora:jogo.bandeira_casa;
@@ -692,10 +705,11 @@ async function renderApostasJogos(){
   const locked=isLocked(ch);
   // Resolver nomes async
   const nomesResolvidos={};
+  await carregarTerceiros16avos();
   await Promise.all(jogosF.map(async j=>{
     nomesResolvidos[j.id]={
-      casa: await resolverNomeTime(j.time_casa),
-      fora: await resolverNomeTime(j.time_fora),
+      casa: await resolverNomeTime(j.time_casa, j.id),
+      fora: await resolverNomeTime(j.time_fora, j.id),
     };
   }));
   let html='';
@@ -869,14 +883,12 @@ async function renderClassificados(){
     const ok=cl&&cl.time_nome&&!cl.time_nome.includes('º Grupo');
     return`<div class="cl-slot ${ok?'ok':''}"><span class="cl-label">${g}2</span><span class="cl-nome ${ok?'':'placeholder'}">${ok?cl.time_nome:`2º Grupo ${g}`}</span>${ok?`<span style="font-size:1.1rem">${cl.bandeira||'🏳'}</span>`:''}</div>`;
   }).join('');
-  // 3os (editáveis)
+  // 3os calculados automaticamente dos grupos
   const p3=document.getElementById('cl-terceiros');
-  p3.innerHTML=[1,2,3,4,5,6,7,8].map(n=>{
-    const key=`T${n}`;const cl=classificados[key];
-    const ok=cl&&cl.time_nome&&!cl.time_nome.includes('Classificado');
-    // Sugerir os 3os calculados
-    const sugestoes=GRUPOS.map(g=>{const c3=classificados[`${g}3`];return c3&&c3.time_nome&&!c3.time_nome.includes('º Grupo')?`${g}: ${c3.time_nome}`:null}).filter(Boolean);
-    return`<div class="cl-slot ${ok?'ok':''}"><span class="cl-label">T${n}</span><span class="cl-nome ${ok?'':'placeholder'}" id="cl-nome-T${n}">${ok?cl.time_nome:'Não definido'}</span>${ok?`<span style="font-size:1.1rem">${cl.bandeira||'🏳'}</span>`:''}<button class="cl-edit" onclick="abrirModalCL('T${n}','3º Classificado ${n}')">Editar</button></div>`;
+  p3.innerHTML=GRUPOS.map(g=>{
+    const cl=classificados[`${g}3`];
+    const ok=cl&&cl.time_nome&&!cl.time_nome.includes('º Grupo');
+    return`<div class="cl-slot ${ok?'ok':''}"><span class="cl-label">${g}3</span><span class="cl-nome ${ok?'':'placeholder'}">${ok?cl.time_nome:`3º Grupo ${g}`}</span>${ok?`<span style="font-size:1.1rem">${cl.bandeira||'🏳'}</span>`:''}</div>`;
   }).join('');
 }
 
@@ -911,6 +923,55 @@ async function confirmarClassificado(){
   showToast(`${time} definido como ${modalCLId}!`);
 }
 
+async function renderTerceiros16avos(){
+  const grid=document.getElementById('terceiros-16avos-grid');
+  if(!grid)return;
+  // Reload terceiros
+  await carregarTerceiros16avos();
+  // Get 3os from classificados for suggestions
+  const terceiros3 = {};
+  GRUPOS.forEach(g=>{
+    const cl=classificados[`${g}3`];
+    if(cl&&cl.time_nome&&!cl.time_nome.includes('º Grupo'))terceiros3[g]=cl;
+  });
+  grid.innerHTML=Object.entries(TERCEIROS_16AVOS_INFO).map(([jogoId,info])=>{
+    const jid=parseInt(jogoId);
+    const atual=terceirosMapa16[jid];
+    const ok=atual?.nome;
+    // Build options: only 3os from eligible groups
+    const opts=info.grupos.map(g=>{
+      const cl=terceiros3[g];
+      const nome=cl?cl.time_nome:`3º Grupo ${g} (sem resultado)`;
+      const sel=(ok&&atual.nome===cl?.time_nome)?'selected':'';
+      return`<option value="${cl?.time_nome||''}" data-grupo="${g}" ${sel}>${nome}</option>`;
+    }).join('');
+    return`<div class="cl-slot ${ok?'ok':''}" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <span class="cl-label" style="width:auto;font-size:.75rem">${info.label}</span>
+      <select id="t16-${jid}" style="width:100%">
+        <option value="">— Selecione o 3º —</option>
+        ${opts}
+        <optgroup label="Todos os times">
+          ${TODOS_TIMES.map(t=>`<option value="${t}" ${ok&&atual.nome===t?'selected':''}>${t}</option>`).join('')}
+        </optgroup>
+      </select>
+      ${ok?`<span class="chip chip-v" style="font-size:.65rem">✓ ${atual.nome}</span>`:'<span class="chip chip-c" style="font-size:.65rem">Pendente</span>'}
+    </div>`;
+  }).join('');
+}
+
+async function salvarTerceiros16avos(){
+  const upserts=Object.keys(TERCEIROS_16AVOS_INFO).map(jogoId=>{
+    const sel=document.getElementById(`t16-${jogoId}`);
+    return{jogo_id:parseInt(jogoId),time_nome:sel?.value||null,bandeira:'🏳',atualizado_em:new Date().toISOString()};
+  }).filter(u=>u.time_nome);
+  if(!upserts.length){showToast('Selecione pelo menos um 3º',true);return}
+  const{error}=await sb.from('bolao_terceiros_16avos').upsert(upserts,{onConflict:'jogo_id'});
+  if(error){showToast('Erro ao salvar!',true);return}
+  await carregarTerceiros16avos();
+  showToast('3ºs dos 16-avos salvos!');
+  renderTerceiros16avos();
+}
+
 async function salvarTerceiros(){showToast('Use os botões Editar de cada slot T1–T8.')}
 
 // ============================================================
@@ -938,7 +999,8 @@ async function renderResultadosMM(){
   mmLocais={};(mmDB||[]).forEach(m=>{mmLocais[m.jogo_id]={vencedor:m.time_vencedor,bandeira:m.bandeira_vencedor}});
   // Resolver nomes
   const nomes={};
-  await Promise.all(jogosF.map(async j=>{nomes[j.id]={casa:await resolverNomeTime(j.time_casa),fora:await resolverNomeTime(j.time_fora)}}));
+  await carregarTerceiros16avos();
+  await Promise.all(jogosF.map(async j=>{nomes[j.id]={casa:await resolverNomeTime(j.time_casa,j.id),fora:await resolverNomeTime(j.time_fora,j.id)}}));
   const rodadas=[...new Set(jogosF.map(j=>j.rodada))];
   let html='';
   rodadas.forEach(r=>{
@@ -990,7 +1052,8 @@ async function salvarResultadosMM(){
   // Salvar vencedores + propagar para próxima fase
   const jogosF=jogos.filter(j=>j.fase===faseResMM);
   const nomes={};
-  await Promise.all(jogosF.map(async j=>{nomes[j.id]={casa:await resolverNomeTime(j.time_casa),fora:await resolverNomeTime(j.time_fora)}}));
+  await carregarTerceiros16avos();
+  await Promise.all(jogosF.map(async j=>{nomes[j.id]={casa:await resolverNomeTime(j.time_casa,j.id),fora:await resolverNomeTime(j.time_fora,j.id)}}));
   const upMM=[];
   for(const[jIdStr,mm]of Object.entries(mmLocais)){
     if(!mm.vencedor)continue;
@@ -1026,7 +1089,7 @@ function switchTabRes(btn,tabId){
   ['res-grupos','res-classificados','res-matamata','res-pre'].forEach(id=>document.getElementById(id).style.display=id===tabId?'':'none');
   if(tabId==='res-grupos'){renderFasePillsResGrupos();renderResultadosGrupos()}
   else if(tabId==='res-classificados')renderClassificados();
-  else if(tabId==='res-matamata'){document.getElementById('fase-pills-res-mm').innerHTML='';renderFasePillsResMM();renderResultadosMM()}
+  else if(tabId==='res-matamata'){document.getElementById('fase-pills-res-mm').innerHTML='';renderFasePillsResMM();renderResultadosMM();renderTerceiros16avos()}
   else if(tabId==='res-pre'){carregarResultadosPre();popularSelectTimes('res-campeao')}
 }
 
