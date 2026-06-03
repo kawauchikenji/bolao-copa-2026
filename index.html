@@ -992,14 +992,14 @@ async function renderResultadosMM(){
           ${dFmt?`<div class="jmeta" style="color:var(--amarelo)">${dFmt}</div>`:''}
         </div>
         <div class="tl r"><span class="bf">${nf.bandeira||'🏳'}</span><span>${nf.nome}</span></div>
-        <div class="rb" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px">
+        <div class="rb" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
           <span>🏆 Vencedor:</span>
-          <select onchange="setMMVencedor(${j.id},this.value)" style="max-width:200px;padding:4px 8px">
+          <select onchange="setMMVencedor(${j.id},this.value,'${nc.nome}','${nf.nome}')" style="max-width:240px;padding:4px 8px">
             <option value="">— Definir vencedor —</option>
-            <option value="${nc.nome}" ${mmAtual?.vencedor===nc.nome?'selected':''}>${nc.nome}</option>
-            <option value="${nf.nome}" ${mmAtual?.vencedor===nf.nome?'selected':''}>${nf.nome}</option>
+            ${nc.nome!=='3º classificado (a definir)'&&nc.nome!=='a definir'?`<option value="${nc.nome}" ${mmAtual?.vencedor===nc.nome?'selected':''}>${nc.nome}</option>`:''}
+            ${nf.nome!=='3º classificado (a definir)'&&nf.nome!=='a definir'?`<option value="${nf.nome}" ${mmAtual?.vencedor===nf.nome?'selected':''}>${nf.nome}</option>`:''}
           </select>
-          ${mmAtual?.vencedor?`<span class="chip chip-v">✓ ${mmAtual.vencedor}</span>`:''}
+          ${mmAtual?.vencedor?`<span class="chip chip-v" style="font-size:.72rem">✓ ${mmAtual.vencedor}</span>`:'<span class="chip chip-c" style="font-size:.72rem">Pendente</span>'}
         </div>
       </div>`;
     });
@@ -1008,8 +1008,11 @@ async function renderResultadosMM(){
   container.innerHTML=html;
 }
 
-function setMMVencedor(jId,vencedor){
-  if(!mmLocais[jId])mmLocais[jId]={};mmLocais[jId].vencedor=vencedor;
+function setMMVencedor(jId,vencedor,nomeCasa,nomeFora){
+  if(!mmLocais[jId])mmLocais[jId]={};
+  mmLocais[jId].vencedor=vencedor;
+  if(nomeCasa)mmLocais[jId]._nomeCasa=nomeCasa;
+  if(nomeFora)mmLocais[jId]._nomeFora=nomeFora;
 }
 
 async function salvarResultadosMM(){
@@ -1026,8 +1029,8 @@ async function salvarResultadosMM(){
     if(!mm.vencedor)continue;
     const jId=parseInt(jIdStr);
     const jogo=jogos.find(j=>j.id===jId);if(!jogo)continue;
-    const nc=nomes[jId]?.casa||{nome:jogo.time_casa,bandeira:jogo.bandeira_casa};
-    const nf=nomes[jId]?.fora||{nome:jogo.time_fora,bandeira:jogo.bandeira_fora};
+    const nc=nomes[jId]?.casa||{nome:mm._nomeCasa||jogo.time_casa,bandeira:jogo.bandeira_casa};
+    const nf=nomes[jId]?.fora||{nome:mm._nomeFora||jogo.time_fora,bandeira:jogo.bandeira_fora};
     const bandVenc=mm.vencedor===nc.nome?nc.bandeira:nf.bandeira;
     upMM.push({jogo_id:jId,time_vencedor:mm.vencedor,bandeira_vencedor:bandVenc||'🏳',atualizado_em:new Date().toISOString()});
     // Propagar para próximo jogo
