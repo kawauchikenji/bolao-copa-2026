@@ -674,6 +674,8 @@ async function selFaseAp(fase,rodNum){
   renderFasePillsAp();
   const ch=fase==='grupos'?`grupos-r${rodadaGrupo}`:fase;
   renderCD('ap-cd',ch);
+  // Recarregar jogos do banco para pegar nomes atualizados (especialmente 16-avos)
+  if(fase!=='grupos') await carregarJogos();
   await renderApostasJogos();
 }
 
@@ -894,9 +896,19 @@ async function confirmarClassificado(){
   if(!modalCLId)return;
   const time=document.getElementById('modal-cl-select').value;
   if(!time){showToast('Selecione um time',true);return}
+  // Salvar no classificados
   const{error}=await sb.from('bolao_classificados').upsert({id:modalCLId,grupo:'T',posicao:parseInt(modalCLId.replace('T','')),time_nome:time,bandeira:'🏳',atualizado_em:new Date().toISOString()},{onConflict:'id'});
-  if(error){showToast('Erro!',true);return}
-  await carregarClassificados();fecharModal();await renderClassificados();showToast(`${time} salvo como ${modalCLId}!`);document.getElementById('cl-terceiros').scrollIntoView({behavior:'smooth'});
+  if(error){showToast('Erro ao salvar!',true);return}
+  // Propagar diretamente para o jogo dos 16-avos correspondente
+  const{data:cl}=await sb.from('bolao_classificados').select('jogo_id_16avos').eq('id',modalCLId).single();
+  if(cl?.jogo_id_16avos){
+    await sb.from('bolao_jogos').update({time_fora:time,bandeira_fora:'🏳'}).eq('id',cl.jogo_id_16avos);
+    await carregarJogos(); // recarregar jogos para refletir nas apostas
+  }
+  await carregarClassificados();
+  fecharModal();
+  await renderClassificados();
+  showToast(`${time} definido como ${modalCLId}!`);
 }
 
 async function salvarTerceiros(){showToast('Use os botões Editar de cada slot T1–T8.')}
