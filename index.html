@@ -157,14 +157,9 @@ select:disabled{opacity:.6;cursor:not-allowed}
 .cl-label{font-family:var(--fd);font-weight:800;font-size:.82rem;text-transform:uppercase;color:var(--texto2);flex-shrink:0;width:28px}
 .cl-nome{flex:1;font-size:.88rem;font-weight:600;color:var(--texto)}
 .cl-nome.placeholder{color:var(--texto2);font-style:italic}
-.cl-edit{background:none;border:1px solid var(--borda);border-radius:6px;color:var(--texto2);font-size:.72rem;padding:3px 8px;cursor:pointer;font-family:var(--fd);font-weight:700;text-transform:uppercase;white-space:nowrap}
-.cl-edit:hover{border-color:var(--verde);color:var(--texto)}
+
 /* Modal de edição */
-.modal-overlay{display:none;background:rgba(0,0,0,.55);border-radius:var(--radius);padding:2rem 1rem;margin-bottom:1rem;min-height:200px;align-items:center;justify-content:center}
-.modal-overlay.visible{display:flex}
-.modal{background:var(--fundo3);border:1px solid rgba(0,255,157,.25);border-radius:16px;padding:1.5rem;width:100%;max-width:380px}
-.modal-title{font-family:var(--fd);font-weight:800;font-size:1.1rem;text-transform:uppercase;color:var(--verde-neon);margin-bottom:1rem}
-.modal-actions{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end}
+
 #toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--verde-escuro);border:1px solid var(--verde-neon);color:var(--verde-neon);font-family:var(--fd);font-weight:700;font-size:.88rem;letter-spacing:.04em;text-transform:uppercase;padding:10px 18px;border-radius:10px;z-index:9999;transform:translateY(120px);transition:transform .3s ease}
 #toast.show{transform:translateY(0)}
 #toast.erro{background:#3a1616;border-color:#ff6b6b;color:#ff6b6b}
@@ -378,7 +373,7 @@ let faseSelecionada='grupos',rodadaGrupo=1;
 let faseResMM='dezesseis';
 let rodadaResGrupo=1;
 let cdInterval=null;
-let modalCLId=null;
+
 
 // ============================================================
 // LOCKOUT — lido do Supabase
@@ -892,36 +887,9 @@ async function renderClassificados(){
   }).join('');
 }
 
-// Modal de edição de classificado
-function abrirModalCL(id,titulo){
-  modalCLId=id;
-  document.getElementById('modal-cl-title').textContent=`Definir: ${titulo}`;
-  const sel=document.getElementById('modal-cl-select');
-  const atual=classificados[id]?.time_nome||'';
-  sel.innerHTML='<option value="">— Selecione —</option>'+TODOS_TIMES.map(t=>`<option value="${t}" ${atual===t?'selected':''}>${t}</option>`).join('');
-  document.getElementById('modal-cl').classList.add('visible');
-}
+// modal removido
 
-function fecharModal(){document.getElementById('modal-cl').classList.remove('visible');modalCLId=null}
 
-async function confirmarClassificado(){
-  if(!modalCLId)return;
-  const time=document.getElementById('modal-cl-select').value;
-  if(!time){showToast('Selecione um time',true);return}
-  // Salvar no classificados
-  const{error}=await sb.from('bolao_classificados').upsert({id:modalCLId,grupo:'T',posicao:parseInt(modalCLId.replace('T','')),time_nome:time,bandeira:'🏳',atualizado_em:new Date().toISOString()},{onConflict:'id'});
-  if(error){showToast('Erro ao salvar!',true);return}
-  // Propagar diretamente para o jogo dos 16-avos correspondente
-  const{data:cl}=await sb.from('bolao_classificados').select('jogo_id_16avos').eq('id',modalCLId).single();
-  if(cl?.jogo_id_16avos){
-    await sb.from('bolao_jogos').update({time_fora:time,bandeira_fora:'🏳'}).eq('id',cl.jogo_id_16avos);
-    await carregarJogos(); // recarregar jogos para refletir nas apostas
-  }
-  await carregarClassificados();
-  fecharModal();
-  await renderClassificados();
-  showToast(`${time} definido como ${modalCLId}!`);
-}
 
 async function renderTerceiros16avos(){
   const grid=document.getElementById('terceiros-16avos-grid');
@@ -972,7 +940,6 @@ async function salvarTerceiros16avos(){
   renderTerceiros16avos();
 }
 
-async function salvarTerceiros(){showToast('Use os botões Editar de cada slot T1–T8.')}
 
 // ============================================================
 // RESULTADOS — MATA-MATA
