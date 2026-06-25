@@ -1174,9 +1174,9 @@ async function salvarConfig(){
 // ============================================================
 async function calcularRanking(){
   const lista=document.getElementById('ranking-lista');lista.innerHTML='<div class="loading">Calculando</div>';
-  // Buscar ranking direto da view — já calcula pontos por fase corretamente
-  const[{data:pontuacoes},{data:apPre},{data:resPre},{data:cfg}]=await Promise.all([
-    sb.from('bolao_pontuacao_view').select('participante_id,participante,pontos,status').limit(50000),
+  // bolao_ranking_view já agrega — 1 linha por participante, sem risco de limite
+  const[{data:ranking},{data:apPre},{data:resPre},{data:cfg}]=await Promise.all([
+    sb.from('bolao_ranking_view').select('*'),
     sb.from('bolao_apostas_pre').select('*'),
     sb.from('bolao_resultados_pre').select('*').eq('id',1).single(),
     sb.from('bolao_config').select('*').eq('id',1).single(),
@@ -1184,25 +1184,16 @@ async function calcularRanking(){
   const c=cfg||config;
   const mP={};(apPre||[]).forEach(a=>mP[a.participante_id]=a);
   const rp=resPre||{};
-  // Agrupar pontuação por participante_id
   const mapaRanking={};
-  (pontuacoes||[]).forEach(row=>{
-    if(!mapaRanking[row.participante_id]){
-      mapaRanking[row.participante_id]={nome:row.participante,pts:0,cr:0,ac:0,er:0};
-    }
-    mapaRanking[row.participante_id].pts+=row.pontos||0;
-    if(row.status==='cravada')mapaRanking[row.participante_id].cr++;
-    else if(row.status==='resultado')mapaRanking[row.participante_id].ac++;
-    else if(row.status==='errou')mapaRanking[row.participante_id].er++;
-  });
+  (ranking||[]).forEach(r=>mapaRanking[r.participante_id]=r);
   const dados=participantes.map((p,i)=>{
-    const rk=mapaRanking[p.id]||{pts:0,cr:0,ac:0,er:0};
+    const rk=mapaRanking[p.id]||{total_pontos:0,cravadas:0,acertos:0,erros:0};
     const pre=mP[p.id]||{};
     const pCa=rp.campeao&&pre.campeao&&pre.campeao.toLowerCase()===rp.campeao.toLowerCase()?c.pts_campeao:0;
     const pAr=rp.artilheiro&&pre.artilheiro&&pre.artilheiro.toLowerCase()===rp.artilheiro.toLowerCase()?c.pts_artilheiro:0;
     const pAs=rp.assistente&&pre.assistente&&pre.assistente.toLowerCase()===rp.assistente.toLowerCase()?c.pts_assistente:0;
-    const pts=rk.pts+pCa+pAr+pAs;
-    return{id:p.id,nome:p.nome,idx:i,pts,cr:rk.cr,ac:rk.ac,er:rk.er,pCa,pAr,pAs,mine:p.id===sessao?.participante_id};
+    const pts=(rk.total_pontos||0)+pCa+pAr+pAs;
+    return{id:p.id,nome:p.nome,idx:i,pts,cr:rk.cravadas||0,ac:rk.acertos||0,er:rk.erros||0,pCa,pAr,pAs,mine:p.id===sessao?.participante_id};
   }).sort((a,b)=>b.pts-a.pts||b.cr-a.cr);
   const med=['p1','p2','p3'];
   lista.innerHTML=dados.map((d,pos)=>`
