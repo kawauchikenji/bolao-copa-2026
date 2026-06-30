@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bolão Amigos Copa 2026</title>
+<title>Bolão Copa 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--verde:#00A86B;--verde-escuro:#007A4D;--verde-neon:#00FF9D;--amarelo:#FFD700;--fundo:#0A0F1A;--fundo3:#1E2A3A;--card:#162035;--borda:rgba(255,255,255,0.08);--texto:#F0F4FF;--texto2:#8A9BBE;--fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--fundo);color:var(--texto);min-height:100vh}
-#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;background:radial-gradient(ellipse at 50% 0%,rgba(26,95,180,.5) 0%,var(--fundo) 65%)}
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,48,135,.5) 0%,var(--fundo) 65%)}
 .auth-box{width:100%;max-width:420px}
 .auth-logo{text-align:center;margin-bottom:2rem}
 .auth-logo h1{font-family:var(--fd);font-weight:900;font-size:2.2rem;letter-spacing:.05em;text-transform:uppercase}
@@ -33,7 +33,7 @@ body{font-family:var(--fb);background:var(--fundo);color:var(--texto);min-height
 .auth-error.show{display:block}
 .auth-hint{text-align:center;font-size:.82rem;color:var(--texto2);margin-top:1rem}
 #app{display:none}
-header{background:linear-gradient(135deg,#0d2d6b 0%,#1a5fb4 50%,#0d2d6b 100%);border-bottom:2px solid var(--amarelo);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;height:58px;gap:.75rem}
+header{background:linear-gradient(135deg,#001a3a 0%,#003087 50%,#001a3a 100%);border-bottom:2px solid var(--amarelo);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;height:58px;gap:.75rem}
 .logo{font-family:var(--fd);font-weight:900;font-size:1.4rem;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .logo span{color:var(--amarelo)}
 .hright{display:flex;align-items:center;gap:.6rem}
@@ -199,7 +199,7 @@ select:disabled{opacity:.6;cursor:not-allowed}
 </div>
 <div id="app">
 <header>
-  <div class="logo">⚽ <span>COPA 2026</span> — Amigos</div>
+  <div class="logo">⚽ <span>Copa 26</span></div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="showSection('apostas-pre')">🏆 Pré-Copa</button>
     <button class="nav-tab" onclick="showSection('apostas-jogos')">🎯 Apostas</button>
@@ -345,8 +345,8 @@ select:disabled{opacity:.6;cursor:not-allowed}
 
 <div id="toast"></div>
 <script>
-const SB_URL='https://bakgosvkttrtjtahcpxx.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJha2dvc3ZrdHRydGp0YWhjcHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNjgyODcsImV4cCI6MjA5NjY0NDI4N30.jExz1Zeee0ITMtqzZIu7A6PbX-rp9qjlIJWUf_-vHFg';
+const SB_URL='https://eydzomhqmktbmfjikbkx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZHpvbWhxbWt0Ym1mamlrYmt4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDQ2MDUsImV4cCI6MjA5MjAyMDYwNX0.opdy1ToSOX3svUb7UY3NNNoovXPufoOr1csfrCcGvJc';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
 const TODOS_TIMES=["México","África do Sul","Coreia do Sul","Canadá","Catar","Suíça","Estados Unidos","Paraguai","Austrália","Brasil","Marrocos","Haiti","Escócia","Alemanha","Curaçao","Holanda","Japão","Costa do Marfim","Equador","Tunísia","Espanha","Cabo Verde","Bélgica","Egito","Arábia Saudita","Uruguai","Irã","Nova Zelândia","Argentina","Argélia","França","Senegal","Noruega","Áustria","Jordânia","Portugal","Colômbia","Inglaterra","Croácia","Gana","Panamá","Uzbequistão","Suécia","Turquia","República Tcheca","Bósnia e Herzegovina","Rep. D. do Congo","Iraque"];
@@ -394,7 +394,7 @@ let cdInterval=null;
 // LOCKOUT — lido do Supabase
 // ============================================================
 async function carregarLockouts(){
-  const{data}=await sb.from('amigos_lockouts').select('*').order('ordem');
+  const{data}=await sb.from('bolao_lockouts').select('*').order('ordem');
   lockouts={};
   (data||[]).forEach(l=>{lockouts[l.chave]={aberta:l.aberta,deadline:new Date(l.deadline),nome:l.nome}});
 }
@@ -467,7 +467,7 @@ async function login(){
   hideAE('login-error');
   if(!u||!c){showAE('login-error','Preencha usuário e CPF.');return}
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Entrando...';
-  const{data,error}=await sb.from('amigos_usuarios').select('*').eq('usuario',u).eq('cpf',c).single();
+  const{data,error}=await sb.from('bolao_usuarios').select('*').eq('usuario',u).eq('cpf',c).single();
   btn.disabled=false;btn.textContent='Entrar';
   if(error||!data){showAE('login-error','Usuário ou CPF incorretos.');return}
   iniciarSessao(data);
@@ -482,10 +482,10 @@ async function cadastrar(){
   if(cpf.length<11){showAE('cad-error','CPF inválido.');return}
   if(usuario.length<3){showAE('cad-error','Usuário muito curto.');return}
   const btn=document.getElementById('btn-cadastro');btn.disabled=true;btn.textContent='Criando...';
-  const{data:part,error:ep}=await sb.from('amigos_participantes').insert({nome}).select().single();
+  const{data:part,error:ep}=await sb.from('bolao_participantes').insert({nome}).select().single();
   if(ep){btn.disabled=false;btn.textContent='Criar conta';showAE('cad-error','Erro. Tente novamente.');return}
-  const{data:usr,error:eu}=await sb.from('amigos_usuarios').insert({nome,cpf,usuario,is_admin:false,participante_id:part.id}).select().single();
-  if(eu){await sb.from('amigos_participantes').delete().eq('id',part.id);btn.disabled=false;btn.textContent='Criar conta';showAE('cad-error',eu.code==='23505'?'Usuário ou CPF já cadastrado.':'Erro.');return}
+  const{data:usr,error:eu}=await sb.from('bolao_usuarios').insert({nome,cpf,usuario,is_admin:false,participante_id:part.id}).select().single();
+  if(eu){await sb.from('bolao_participantes').delete().eq('id',part.id);btn.disabled=false;btn.textContent='Criar conta';showAE('cad-error',eu.code==='23505'?'Usuário ou CPF já cadastrado.':'Erro.');return}
   btn.disabled=false;btn.textContent='Criar conta';iniciarSessao(usr);
 }
 
@@ -524,15 +524,15 @@ async function carregarDados(){
 }
 
 async function carregarConfig(){
-  const{data}=await sb.from('amigos_config').select('*').eq('id',1).single();
+  const{data}=await sb.from('bolao_config').select('*').eq('id',1).single();
   if(data){config=data;atualizarLabels();}
 }
 
-async function carregarParticipantes(){const{data}=await sb.from('amigos_participantes').select('*').order('criado_em');participantes=data||[]}
-async function carregarJogos(){const{data}=await sb.from('amigos_jogos').select('*').order('id');jogos=data||[]}
+async function carregarParticipantes(){const{data}=await sb.from('bolao_participantes').select('*').order('criado_em');participantes=data||[]}
+async function carregarJogos(){const{data}=await sb.from('bolao_jogos').select('*').order('id');jogos=data||[]}
 
 async function carregarClassificados(){
-  const{data}=await sb.from('amigos_classificados').select('*');
+  const{data}=await sb.from('bolao_classificados').select('*');
   classificados={};(data||[]).forEach(c=>{classificados[c.id]=c});
 }
 
@@ -556,6 +556,7 @@ function atualizarLabels(){
   if(f('lbl-ca'))f('lbl-ca').textContent=`${config.pts_campeao} pts — campeão`;
   if(f('lbl-ar'))f('lbl-ar').textContent=`${config.pts_artilheiro} pts — artilheiro`;
   if(f('lbl-as'))f('lbl-as').textContent=`${config.pts_assistente} pts — assistências`;
+  // Grupos
   if(f('pts-cravada'))f('pts-cravada').value=config.pts_cravada;
   if(f('pts-resultado'))f('pts-resultado').value=config.pts_resultado;
   if(f('pts-empate'))f('pts-empate').value=config.pts_empate||5;
@@ -590,7 +591,7 @@ const TERCEIROS_16AVOS_INFO = {
 let terceirosMapa16 = {};
 
 async function carregarTerceiros16avos(){
-  const{data}=await sb.from('amigos_terceiros_16avos').select('*');
+  const{data}=await sb.from('bolao_terceiros_16avos').select('*');
   terceirosMapa16={};
   (data||[]).forEach(t=>{if(t.time_nome)terceirosMapa16[t.jogo_id]={nome:t.time_nome,bandeira:t.bandeira||'🏳'}});
 }
@@ -615,7 +616,7 @@ async function resolverNomeTime(nomeOriginal, jogoId=null){
   const mV=nomeOriginal.match(/^Venc\. J(\d+)$/);
   if(mV){
     const jid=parseInt(mV[1]);
-    const{data}=await sb.from('amigos_resultados_matamata').select('time_vencedor,bandeira_vencedor').eq('jogo_id',jid).single();
+    const{data}=await sb.from('bolao_resultados_matamata').select('time_vencedor,bandeira_vencedor').eq('jogo_id',jid).single();
     if(data?.time_vencedor)return{nome:data.time_vencedor,bandeira:data.bandeira_vencedor||'🏳'};
     return{nome:nomeOriginal,bandeira:'⚽'};
   }
@@ -625,7 +626,7 @@ async function resolverNomeTime(nomeOriginal, jogoId=null){
     const sfId=mP[1]==='1'?501:502;
     const jogo=jogos.find(j=>j.id===sfId);
     if(jogo){
-      const{data:mm}=await sb.from('amigos_resultados_matamata').select('*').eq('jogo_id',sfId).single();
+      const{data:mm}=await sb.from('bolao_resultados_matamata').select('*').eq('jogo_id',sfId).single();
       if(mm?.time_vencedor){
         const venc=mm.time_vencedor;
         const perdedor=venc===jogo.time_casa?jogo.time_fora:jogo.time_casa;
@@ -643,7 +644,7 @@ async function resolverNomeTime(nomeOriginal, jogoId=null){
 // ============================================================
 async function carregarApostaPre(){
   if(!sessao?.participante_id)return;
-  const{data}=await sb.from('amigos_apostas_pre').select('*').eq('participante_id',sessao.participante_id).single();
+  const{data}=await sb.from('bolao_apostas_pre').select('*').eq('participante_id',sessao.participante_id).single();
   document.getElementById('ap-campeao').value=data?.campeao||'';
   document.getElementById('ap-artilheiro').value=data?.artilheiro||'';
   document.getElementById('ap-assistente').value=data?.assistente||'';
@@ -658,7 +659,7 @@ async function carregarApostaPre(){
 async function salvarApostaPre(){
   if(isLocked('pre-copa')){showToast('Prazo encerrado!',true);return}
   if(!sessao?.participante_id){showToast('Sem participante.',true);return}
-  const{error}=await sb.from('amigos_apostas_pre').upsert({participante_id:sessao.participante_id,campeao:document.getElementById('ap-campeao').value,artilheiro:document.getElementById('ap-artilheiro').value.trim(),assistente:document.getElementById('ap-assistente').value.trim(),atualizado_em:new Date().toISOString()},{onConflict:'participante_id'});
+  const{error}=await sb.from('bolao_apostas_pre').upsert({participante_id:sessao.participante_id,campeao:document.getElementById('ap-campeao').value,artilheiro:document.getElementById('ap-artilheiro').value.trim(),assistente:document.getElementById('ap-assistente').value.trim(),atualizado_em:new Date().toISOString()},{onConflict:'participante_id'});
   if(error){showToast('Erro!',true);return}
   showToast('Apostas especiais salvas!');renderListaApostasPre();
 }
@@ -666,7 +667,7 @@ async function salvarApostaPre(){
 async function renderListaApostasPre(){
   const div=document.getElementById('lista-apostas-pre');
   if(!participantes.length){div.innerHTML='<p style="color:var(--texto2)">Nenhum participante.</p>';return}
-  const{data:ap}=await sb.from('amigos_apostas_pre').select('*');
+  const{data:ap}=await sb.from('bolao_apostas_pre').select('*');
   const mapa={};(ap||[]).forEach(a=>mapa[a.participante_id]=a);
   div.innerHTML=participantes.map((p,i)=>{
     const a=mapa[p.id]||{},mine=p.id===sessao?.participante_id;
@@ -716,7 +717,7 @@ async function renderApostasJogos(){
   const jogosF=jogosDaFase(faseSelecionada,faseSelecionada==='grupos'?rodadaGrupo:null);
   if(!jogosF.length){container.innerHTML='<div class="empty"><h3>Nenhum jogo nesta fase</h3></div>';return}
   const ids=jogosF.map(j=>j.id);
-  const{data:apDB}=await sb.from('amigos_apostas').select('*').eq('participante_id',sessao.participante_id).in('jogo_id',ids);
+  const{data:apDB}=await sb.from('bolao_apostas').select('*').eq('participante_id',sessao.participante_id).in('jogo_id',ids);
   apostasLocais={};(apDB||[]).forEach(a=>{apostasLocais[a.jogo_id]={casa:a.gols_casa,fora:a.gols_fora}});
   const ch=faseSelecionada==='grupos'?`grupos-r${rodadaGrupo}`:faseSelecionada;
   const locked=isLocked(ch);
@@ -784,7 +785,7 @@ async function salvarApostasJogos(){
   if(!sessao?.participante_id)return;
   const btn=document.getElementById('btn-salvar-apostas');btn.disabled=true;btn.textContent='Salvando...';
   const up=Object.entries(apostasLocais).filter(([,v])=>v.casa!==null&&v.fora!==null&&v.casa!==undefined&&v.fora!==undefined).map(([jId,v])=>({participante_id:sessao.participante_id,jogo_id:parseInt(jId),gols_casa:v.casa,gols_fora:v.fora}));
-  if(up.length){const{error}=await sb.from('amigos_apostas').upsert(up,{onConflict:'participante_id,jogo_id'});if(error){showToast('Erro!',true);btn.disabled=false;btn.textContent='💾 Salvar Apostas';return}}
+  if(up.length){const{error}=await sb.from('bolao_apostas').upsert(up,{onConflict:'participante_id,jogo_id'});if(error){showToast('Erro!',true);btn.disabled=false;btn.textContent='💾 Salvar Apostas';return}}
   btn.disabled=false;btn.textContent='💾 Salvar Apostas';showToast('Apostas salvas!');renderApostasJogos();
 }
 
@@ -807,7 +808,7 @@ async function renderResultadosGrupos(){
   container.innerHTML='<div class="loading">Carregando</div>';
   const jogosF=jogosDaFase('grupos',rodadaResGrupo);
   const ids=jogosF.map(j=>j.id);
-  const{data:resDB}=await sb.from('amigos_resultados').select('*').in('jogo_id',ids);
+  const{data:resDB}=await sb.from('bolao_resultados').select('*').in('jogo_id',ids);
   resultadosLocais={};(resDB||[]).forEach(r=>{resultadosLocais[r.jogo_id]={casa:r.gols_casa,fora:r.gols_fora}});
   const grupos=[...new Set(jogosF.map(j=>{const m=j.rodada.match(/Grupo\s[A-L]/);return m?m[0]:j.rodada}))];
   let html='';
@@ -843,7 +844,7 @@ function setResLocal(jId,lado,v){if(!resultadosLocais[jId])resultadosLocais[jId]
 async function salvarResultados(){
   const up=Object.entries(resultadosLocais).filter(([,v])=>v.casa!==null&&v.fora!==null&&v.casa!==undefined&&v.fora!==undefined).map(([jId,v])=>({jogo_id:parseInt(jId),gols_casa:v.casa,gols_fora:v.fora,atualizado_em:new Date().toISOString()}));
   if(!up.length){showToast('Nenhum resultado',true);return}
-  const{error}=await sb.from('amigos_resultados').upsert(up,{onConflict:'jogo_id'});
+  const{error}=await sb.from('bolao_resultados').upsert(up,{onConflict:'jogo_id'});
   if(error){showToast('Erro!',true);return}
   // Recalcular classificados auto (1os e 2os)
   await recalcularClassificadosAuto();
@@ -855,7 +856,7 @@ async function salvarResultados(){
 // CLASSIFICADOS
 // ============================================================
 async function recalcularClassificadosAuto(){
-  const{data:todos}=await sb.from('amigos_resultados').select('jogo_id,gols_casa,gols_fora');
+  const{data:todos}=await sb.from('bolao_resultados').select('jogo_id,gols_casa,gols_fora');
   const mapaR={};(todos||[]).forEach(r=>mapaR[r.jogo_id]=r);
   const jogosG=jogos.filter(j=>j.fase==='grupos');
   const tabs={};GRUPOS.forEach(g=>{tabs[g]={}});
@@ -881,7 +882,7 @@ async function recalcularClassificadosAuto(){
     if(times[1])upserts.push({id:`${g}2`,grupo:g,posicao:2,time_nome:times[1].nome,bandeira:times[1].bandeira||'🏳',atualizado_em:new Date().toISOString()});
     if(times[2])upserts.push({id:`${g}3`,grupo:g,posicao:3,time_nome:times[2].nome,bandeira:times[2].bandeira||'🏳',atualizado_em:new Date().toISOString()});
   });
-  if(upserts.length)await sb.from('amigos_classificados').upsert(upserts,{onConflict:'id'});
+  if(upserts.length)await sb.from('bolao_classificados').upsert(upserts,{onConflict:'id'});
 }
 
 async function renderClassificados(){
@@ -955,7 +956,7 @@ async function salvarTerceiros16avos(){
     return{jogo_id:parseInt(jogoId),time_nome:sel?.value||null,bandeira:'🏳',atualizado_em:new Date().toISOString()};
   }).filter(u=>u.time_nome);
   if(!upserts.length){showToast('Selecione pelo menos um 3º',true);return}
-  const{error}=await sb.from('amigos_terceiros_16avos').upsert(upserts,{onConflict:'jogo_id'});
+  const{error}=await sb.from('bolao_terceiros_16avos').upsert(upserts,{onConflict:'jogo_id'});
   if(error){showToast('Erro ao salvar!',true);return}
   await carregarTerceiros16avos();
   showToast('3ºs dos 16-avos salvos!');
@@ -981,8 +982,8 @@ async function renderResultadosMM(){
   if(!jogosF.length){container.innerHTML='<div class="empty"><h3>Nenhum jogo</h3></div>';return}
   const ids=jogosF.map(j=>j.id);
   const[{data:resDB},{data:mmDB}]=await Promise.all([
-    sb.from('amigos_resultados').select('*').in('jogo_id',ids),
-    sb.from('amigos_resultados_matamata').select('*').in('jogo_id',ids),
+    sb.from('bolao_resultados').select('*').in('jogo_id',ids),
+    sb.from('bolao_resultados_matamata').select('*').in('jogo_id',ids),
   ]);
   resultadosLocais={};(resDB||[]).forEach(r=>{resultadosLocais[r.jogo_id]={casa:r.gols_casa,fora:r.gols_fora}});
   mmLocais={};(mmDB||[]).forEach(m=>{mmLocais[m.jogo_id]={vencedor:m.time_vencedor,bandeira:m.bandeira_vencedor}});
@@ -1040,7 +1041,7 @@ function setMMVencedor(jId,vencedor,nomeCasa,nomeFora){
 async function salvarResultadosMM(){
   // Salvar placares
   const upRes=Object.entries(resultadosLocais).filter(([,v])=>v.casa!==null&&v.fora!==null&&v.casa!==undefined&&v.fora!==undefined).map(([jId,v])=>({jogo_id:parseInt(jId),gols_casa:v.casa,gols_fora:v.fora,atualizado_em:new Date().toISOString()}));
-  if(upRes.length)await sb.from('amigos_resultados').upsert(upRes,{onConflict:'jogo_id'});
+  if(upRes.length)await sb.from('bolao_resultados').upsert(upRes,{onConflict:'jogo_id'});
   // Salvar vencedores + propagar para próxima fase
   const jogosF=jogos.filter(j=>j.fase===faseResMM);
   const nomes={};
@@ -1060,19 +1061,19 @@ async function salvarResultadosMM(){
     if(prox){
       const campo=prox.lado==='casa'?'time_casa':'time_fora';
       const campoBand=prox.lado==='casa'?'bandeira_casa':'bandeira_fora';
-      await sb.from('amigos_jogos').update({[campo]:`Venc. J${jId}`,[campoBand]:bandVenc||'🏳'}).eq('id',prox.jogoId);
+      await sb.from('bolao_jogos').update({[campo]:`Venc. J${jId}`,[campoBand]:bandVenc||'🏳'}).eq('id',prox.jogoId);
     }
   }
-  if(upMM.length)await sb.from('amigos_resultados_matamata').upsert(upMM,{onConflict:'jogo_id'});
+  if(upMM.length)await sb.from('bolao_resultados_matamata').upsert(upMM,{onConflict:'jogo_id'});
   await carregarJogos();showToast('Resultados salvos e propagados!');renderResultadosMM();
 }
 
 async function salvarResultadosPre(){
-  const{error}=await sb.from('amigos_resultados_pre').upsert({id:1,campeao:document.getElementById('res-campeao').value,artilheiro:document.getElementById('res-artilheiro').value.trim(),assistente:document.getElementById('res-assistente').value.trim(),atualizado_em:new Date().toISOString()});
+  const{error}=await sb.from('bolao_resultados_pre').upsert({id:1,campeao:document.getElementById('res-campeao').value,artilheiro:document.getElementById('res-artilheiro').value.trim(),assistente:document.getElementById('res-assistente').value.trim(),atualizado_em:new Date().toISOString()});
   if(error){showToast('Erro!',true);return}showToast('Resultados especiais salvos!');
 }
 async function carregarResultadosPre(){
-  const{data}=await sb.from('amigos_resultados_pre').select('*').eq('id',1).single();
+  const{data}=await sb.from('bolao_resultados_pre').select('*').eq('id',1).single();
   if(data){document.getElementById('res-campeao').value=data.campeao||'';document.getElementById('res-artilheiro').value=data.artilheiro||'';document.getElementById('res-assistente').value=data.assistente||'';}
 }
 
@@ -1090,7 +1091,7 @@ function switchTabRes(btn,tabId){
 // ============================================================
 async function renderLockoutsAdmin(){
   const div=document.getElementById('lockouts-table');
-  const{data}=await sb.from('amigos_lockouts').select('*').order('ordem');
+  const{data}=await sb.from('bolao_lockouts').select('*').order('ordem');
   if(!data?.length){div.innerHTML='<p style="color:var(--texto2)">Nenhum lockout.</p>';return}
   div.innerHTML=`<table class="ltable">
     <thead><tr><th>Fase</th><th>Deadline</th><th>Status</th><th>Ação</th></tr></thead>
@@ -1115,7 +1116,7 @@ async function renderLockoutsAdmin(){
 }
 
 async function toggleLockout(chave,aberta){
-  const{error}=await sb.from('amigos_lockouts').update({aberta}).eq('chave',chave);
+  const{error}=await sb.from('bolao_lockouts').update({aberta}).eq('chave',chave);
   if(error){showToast('Erro ao atualizar!',true);return}
   // Atualizar lockouts em memória
   if(lockouts[chave])lockouts[chave].aberta=aberta;
@@ -1127,7 +1128,7 @@ async function toggleLockout(chave,aberta){
 
 async function carregarUsuariosAdmin(){
   const div=document.getElementById('usuarios-lista');
-  const{data:us}=await sb.from('amigos_usuarios').select('*').order('criado_em');
+  const{data:us}=await sb.from('bolao_usuarios').select('*').order('criado_em');
   if(!us?.length){div.innerHTML='<p style="color:var(--texto2)">Nenhum usuário.</p>';return}
   div.innerHTML=`<table class="ltable">
     <thead><tr><th>Nome</th><th>Usuário</th><th>Tipo</th><th>Ação</th></tr></thead>
@@ -1137,14 +1138,14 @@ async function carregarUsuariosAdmin(){
         <td><div style="display:flex;align-items:center;gap:7px"><div class="avatar" style="background:${cor}20;color:${cor};border:1px solid ${cor}40;width:26px;height:26px;border-radius:50%;font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">${IN(u.nome)}</div>${u.nome}</div></td>
         <td style="color:var(--texto2)">@${u.usuario}</td>
         <td>${u.is_admin?'<span class="chip chip-a">Admin</span>':'<span class="chip chip-c">User</span>'}</td>
-        <td>${u.usuario!=='jeison'?`<button class="btn btn-s" style="padding:3px 9px;font-size:.7rem" onclick="toggleAdmin('${u.id}',${u.is_admin})">${u.is_admin?'Remover admin':'Tornar admin'}</button>`:'—'}</td>
+        <td>${u.usuario!=='kenjikawauchi'?`<button class="btn btn-s" style="padding:3px 9px;font-size:.7rem" onclick="toggleAdmin('${u.id}',${u.is_admin})">${u.is_admin?'Remover admin':'Tornar admin'}</button>`:'—'}</td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
 }
 
 async function toggleAdmin(uid,isAdmin){
-  await sb.from('amigos_usuarios').update({is_admin:!isAdmin}).eq('id',uid);
+  await sb.from('bolao_usuarios').update({is_admin:!isAdmin}).eq('id',uid);
   carregarUsuariosAdmin();showToast('Permissão atualizada!');
 }
 
@@ -1163,7 +1164,7 @@ async function salvarConfig(){
     if(cr)config[`pts_cravada_${fase}`]=+cr.value||config.pts_cravada;
     if(re)config[`pts_resultado_${fase}`]=+re.value||config.pts_resultado;
   });
-  const{error}=await sb.from('amigos_config').upsert({id:1,...config});
+  const{error}=await sb.from('bolao_config').upsert({id:1,...config});
   if(error){showToast('Erro!',true);return}
   atualizarLabels();showToast('Configurações salvas!');
 }
@@ -1173,12 +1174,12 @@ async function salvarConfig(){
 // ============================================================
 async function calcularRanking(){
   const lista=document.getElementById('ranking-lista');lista.innerHTML='<div class="loading">Calculando</div>';
-  // amigos_ranking_view já agrega — 1 linha por participante, sem risco de limite
+  // bolao_ranking_view já agrega — 1 linha por participante, sem risco de limite
   const[{data:ranking},{data:apPre},{data:resPre},{data:cfg}]=await Promise.all([
-    sb.from('amigos_ranking_view').select('*'),
-    sb.from('amigos_apostas_pre').select('*'),
-    sb.from('amigos_resultados_pre').select('*').eq('id',1).single(),
-    sb.from('amigos_config').select('*').eq('id',1).single(),
+    sb.from('bolao_ranking_view').select('*'),
+    sb.from('bolao_apostas_pre').select('*'),
+    sb.from('bolao_resultados_pre').select('*').eq('id',1).single(),
+    sb.from('bolao_config').select('*').eq('id',1).single(),
   ]);
   const c=cfg||config;
   const mP={};(apPre||[]).forEach(a=>mP[a.participante_id]=a);
